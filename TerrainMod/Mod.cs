@@ -27,7 +27,7 @@ namespace TerrainMod
 
         // You don't need to override this, if you leave it out it will default
         // to false.
-        // public override bool CanBeUnloaded { get; } = false;
+        public override bool CanBeUnloaded { get; } = true;
 
         // You don't need to override this, if you leave it out it will default
         // to false.
@@ -53,7 +53,18 @@ namespace TerrainMod
         {
             // Your code here
             // e.g. save configuration, destroy your objects if CanBeUnloaded is true etc
-
+            if (terrainMod.GetComponent<TerrainCluster>().defaultTerrainToggled)
+            {
+                terrainMod.GetComponent<TerrainCluster>().ToggleDefaultFloor();
+                if (terrainMod.GetComponent<TerrainCluster>().terrainCluster != null)
+                {
+                    foreach (var terrain in terrainMod.GetComponent<TerrainCluster>().terrainCluster)
+                    {
+                        UnityEngine.Object.Destroy(terrain);
+                        Debug.Log("terrain deleted");
+                    }
+                }
+            }
             UnityEngine.Object.Destroy(terrainMod);
         }
     }

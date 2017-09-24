@@ -10,7 +10,7 @@ namespace TerrainMod
     class TerrainCluster : MonoBehaviour
     {
         private int terrainSize = 0;
-        private bool defaultTerrainToggled = false;
+        public bool defaultTerrainToggled = false;
         public bool DefaultTerrainToggled { get { return defaultTerrainToggled; } set { defaultTerrainToggled = value; } }
         private Vector3 defaultFloorSize = Vector3.zero;
         private Vector3 defaultFloorGridSize = Vector3.zero;
@@ -18,13 +18,12 @@ namespace TerrainMod
         private int tileSize = 16;
         private int heightMapResolution = 65;
         private float terrainHeight = 100f;
-        
         private TerrainData terrainData;
-        private GameObject[,] terrainCluster;
-        public GameObject[,] GetTerrainCluster()
-        {
-            return terrainCluster;
-        }
+        public GameObject[,] terrainCluster;
+        //public GameObject[,] GetTerrainCluster()
+        //{
+        //    return terrainCluster;
+        //}
 
         void OnEnable()
         {
@@ -73,7 +72,7 @@ namespace TerrainMod
                 foreach (var terrain in terrainCluster)
                 {
                     Destroy(terrain);
-                    Debug.Log("terrain deleted");
+                    //Debug.Log("terrain deleted");
                 }
             }
             terrainSize = GetComponent<UI>().TerrainSize;
@@ -138,6 +137,18 @@ namespace TerrainMod
                 }
             }
             // Setting up neighbour for each terrain object when terrainsize > 1
+
+            //Test
+            //float[,] testHeight00 = new float[1, 1];
+            //float[,] testHeightMaxMax = new float[1, 1];
+            //testHeight00[0, 0] = 0.6f;
+            //testHeightMaxMax[0, 0] = 0.8f;
+            //terrainCluster[0, 0].GetComponent<Terrain>().terrainData.SetHeights(0, 0, testHeight00);
+            //terrainCluster[0, 0].GetComponent<Terrain>().terrainData.SetHeights(terrainCluster[0, 0].GetComponent<Terrain>().terrainData.heightmapHeight-1, terrainCluster[0, 0].GetComponent<Terrain>().terrainData.heightmapHeight-1, testHeightMaxMax);
+            //terrainCluster[1, 2].GetComponent<Terrain>().terrainData.SetHeights(0, 0, testHeight00);
+            //terrainCluster[1, 2].GetComponent<Terrain>().terrainData.SetHeights(terrainCluster[0, 0].GetComponent<Terrain>().terrainData.heightmapHeight-1, terrainCluster[0, 0].GetComponent<Terrain>().terrainData.heightmapHeight-1, testHeightMaxMax);
+            //Test end
+
             if (terrainSize > 1)
             {
                 for (int i = 0; i < terrainSize; i++)
@@ -187,6 +198,7 @@ namespace TerrainMod
                             terrainCluster[i, j].GetComponent<Terrain>().SetNeighbors(terrainCluster[i - 1, j].GetComponent<Terrain>(), terrainCluster[i, j + 1].GetComponent<Terrain>(),
                                 terrainCluster[i + 1, j].GetComponent<Terrain>(), terrainCluster[i, j - 1].GetComponent<Terrain>());
                         }
+                        terrainCluster[i, j].GetComponent<Terrain>().Flush();
                     }
                 }
             }
@@ -204,8 +216,24 @@ namespace TerrainMod
         private String[] terrainNameSplit;
         private int indexI;
         private int indexJ;
+        private GameObject[,] terrainCluster;
 
-        private void OnCollisionEnter(Collision c)
+        void OnEnable()
+        {
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        void OnDisable()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            terrainCluster = GameObject.Find("Besiege Terrain Mod").GetComponent<TerrainCluster>().terrainCluster ;
+        }
+
+        private void OnCollisionStay(Collision c)
         {
             try
             {
@@ -224,9 +252,6 @@ namespace TerrainMod
             if (StatMaster.isSimulating)
             {
                 parentTerrain = gameObject;
-                terrainNameSplit = gameObject.name.Split(delimiter);
-                indexI = int.Parse(terrainNameSplit[1]);
-                indexJ = int.Parse(terrainNameSplit[2]);
                 while (currentCollisions.Count > 0)
                 {
                     Collision collidedObject = currentCollisions.Dequeue();
@@ -239,7 +264,7 @@ namespace TerrainMod
                         if (newLOD[0, 0] > 0.495)
                         {
                             Vector3 xzVelocityNormalised = new Vector3(collidedObject.relativeVelocity.x, 0, collidedObject.relativeVelocity.z).normalized;
-                            int deformForecast = 10;
+                            int deformForecast = 5;
                             for (int i = 0; i < deformForecast; i++)
                             {
                                 for (int j = 0; j < deformForecast; j++)
@@ -247,34 +272,8 @@ namespace TerrainMod
                                     int xPosition = xCoord + Mathf.RoundToInt((i - deformForecast / 2) * xzVelocityNormalised.normalized.x);
                                     int zPosition = zCoord + Mathf.RoundToInt((j - deformForecast / 2) * xzVelocityNormalised.normalized.z);
                                     parentTerrain.GetComponent<Terrain>().terrainData.SetHeightsDelayLOD(xPosition, zPosition, newLOD);
-
-                                    if (xPosition == 0)
-                                    {
-                                        //Bottom
-                                    }
-                                    if (xPosition == parentTerrain.GetComponent<Terrain>().terrainData.heightmapWidth)
-                                    {
-                                        //Top
-
-                                    }
-                                    if (zPosition == 0)
-                                    {
-                                        //Left
-
-                                    }
-                                    if (zPosition == parentTerrain.GetComponent<Terrain>().terrainData.heightmapHeight)
-                                    {
-                                        //Right
-
-                                    }
                                 }
                             }
-                            //parentTerrain.GetComponent<Terrain>().terrainData.SetHeightsDelayLOD(xCoord, zCoord, newLOD);
-                            //parentTerrain.GetComponent<Terrain>().terrainData.SetHeightsDelayLOD(xCoord + Mathf.RoundToInt(xzVelocityNormalised.normalized.x),
-                            //     zCoord, newLOD);
-                            //parentTerrain.GetComponent<Terrain>().terrainData.SetHeightsDelayLOD(xCoord, zCoord + Mathf.RoundToInt(xzVelocityNormalised.normalized.z), newLOD);
-                            //parentTerrain.GetComponent<Terrain>().terrainData.SetHeightsDelayLOD(xCoord + Mathf.RoundToInt(xzVelocityNormalised.normalized.x),
-                            //    zCoord + Mathf.RoundToInt(xzVelocityNormalised.normalized.z), newLOD);
                         }
                         if (updateCount != 25)
                         {
@@ -283,6 +282,8 @@ namespace TerrainMod
                         else
                         {
                             updateCount = 0;
+                            //Correct edges for neighbour terrain tiles
+                            TerrainEdgeCorrection(gameObject.GetComponent<Terrain>());
                             parentTerrain.GetComponent<Terrain>().ApplyDelayedHeightmapModification();
                         }
                     }
@@ -292,6 +293,12 @@ namespace TerrainMod
                     
                 }
             }
+        }
+        void TerrainEdgeCorrection(Terrain terrain)
+        {
+            terrainNameSplit = gameObject.name.Split(delimiter);
+            indexI = int.Parse(terrainNameSplit[1]);
+            indexJ = int.Parse(terrainNameSplit[2]);
         }
     }
 }
