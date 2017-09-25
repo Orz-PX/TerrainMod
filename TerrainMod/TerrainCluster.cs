@@ -13,9 +13,10 @@ namespace TerrainMod
         private Vector3 defaultFloorSize = Vector3.zero;
         private Vector3 defaultFloorGridSize = Vector3.zero;
         private float[,] heights;
-        private int tileSize = 32;
-        private int heightMapResolution = 65;
+        private int tileSize = 96;
+        private int heightMapResolution = 257;
         private float terrainHeight = 100f;
+        private int heightmapPixelError = 5;
         private TerrainData terrainData;
         public GameObject[,] terrainCluster;
         
@@ -82,9 +83,8 @@ namespace TerrainMod
             {
                 heightmapResolution = heightMapResolution,
                 size = floorSize,
-                thickness = 10f
+                thickness = 10f,
             };
-            //terrainData.SetDetailResolution(512,2);
             heights = new float[terrainData.heightmapWidth, terrainData.heightmapHeight];
             for (int i = 0; i < terrainData.heightmapWidth; i++)
             {
@@ -102,9 +102,18 @@ namespace TerrainMod
                 {
                     
                     terrainCluster[i, j] = Terrain.CreateTerrainGameObject(Instantiate(terrainData));
-                    terrainCluster[i, j].GetComponent<Terrain>().materialTemplate = Instantiate(GameObject.Find("FloorBig").GetComponent<MeshRenderer>().material);
+                    terrainCluster[i, j].isStatic = true;
                     terrainCluster[i, j].GetComponent<Terrain>().materialType = Terrain.MaterialType.Custom;
-                    terrainCluster[i, j].GetComponent<Terrain>().detailObjectDistance = 40;
+                    terrainCluster[i, j].GetComponent<Terrain>().materialTemplate = GameObject.Find("FloorBig").GetComponent<MeshRenderer>().sharedMaterial;
+                    terrainCluster[i, j].GetComponent<Terrain>().materialTemplate.globalIlluminationFlags = MaterialGlobalIlluminationFlags.BakedEmissive;
+                    //terrainCluster[i, j].GetComponent<Terrain>().detailObjectDistance = 10;
+                    terrainCluster[i, j].GetComponent<Terrain>().heightmapPixelError = heightmapPixelError;
+                    terrainCluster[i, j].GetComponent<Terrain>().detailObjectDistance = 25;
+                    terrainCluster[i, j].GetComponent<Terrain>().detailObjectDensity = 0f;
+                    terrainCluster[i, j].GetComponent<Terrain>().castShadows = false;
+                    terrainCluster[i, j].GetComponent<Terrain>().drawTreesAndFoliage = false;
+                    terrainCluster[i, j].GetComponent<Terrain>().editorRenderFlags = TerrainRenderFlags.heightmap;
+                    //Debug.Log(terrainCluster[i, j].GetComponent<Terrain>().GetComponent<Renderer>().isPartOfStaticBatch);
                     terrainCluster[i, j].AddComponent<TerrainDeformer>();
                     // name all terrains
                     terrainCluster[i, j].name = String.Concat("Terrain", "-", i, "-", j);
@@ -166,6 +175,14 @@ namespace TerrainMod
                 }
             }
 
+        }
+
+        void Update()
+        {
+            if (!StatMaster.isSimulating)
+            {
+                StopAllCoroutines();
+            }
         }
     }
 }

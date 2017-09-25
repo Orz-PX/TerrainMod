@@ -7,14 +7,14 @@ namespace TerrainMod
     {
         private Rect rect = new Rect(20f, 20f, 250f, 400f);
         private int windowID = spaar.ModLoader.Util.GetWindowID();
-        private int terrainSize = 20;
+        private int terrainSize = 10;
         public int TerrainSize { get { return terrainSize; } set { terrainSize = value; } }
 
 
         private void DoMyWindow(int windowID)
         {
             GUILayout.BeginHorizontal(new GUILayoutOption[0]);
-            GUILayout.Label("Terrain Size:", new GUILayoutOption[0]);
+            GUILayout.Label("Tiles per side:", new GUILayoutOption[0]);
             TerrainSize = int.Parse(GUILayout.TextField(TerrainSize.ToString(), new GUILayoutOption[0]));
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal(new GUILayoutOption[0]);

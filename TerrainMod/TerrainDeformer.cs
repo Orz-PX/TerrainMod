@@ -1,8 +1,8 @@
 ﻿using System;
 using spaar.ModLoader;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace TerrainMod
 {
@@ -36,22 +36,28 @@ namespace TerrainMod
         private int left = 6;
         private int right = 7;
 
-        void OnEnable()
-        {
-            SceneManager.sceneLoaded += OnSceneLoaded;
-        }
+        private bool terrainLODUpdateStarted = false;
 
-        void OnDisable()
-        {
-            SceneManager.sceneLoaded -= OnSceneLoaded;
-        }
+        //void OnEnable()
+        //{
+        //    SceneManager.sceneLoaded += OnSceneLoaded;
+        //    print("script was enabled");
+        //    //if (GameObject.Find("Besiege Terrain Mod").GetComponent<TerrainCluster>().terrainCluster.Length > 0)
+        //    //{
+        //    //    StartCoroutine(TryCoroutineEdgeCorrection());
+        //    //}
+        //}
 
-        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-        {
-            
-        }
+        //void OnDisable()
+        //{
+        //    SceneManager.sceneLoaded -= OnSceneLoaded;
+        //}
 
-        private void OnCollisionEnter(Collision c)
+        //private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        //{           
+        //}
+
+        private void OnCollisionExit(Collision c)
         {
             try
             {
@@ -71,6 +77,16 @@ namespace TerrainMod
             {
                 parentTerrain = gameObject;
                 int collisionCount = currentCollisions.Count;
+                if (!terrainLODUpdateStarted && collisionCount > 0)
+                {
+                    StartCoroutine(UpdateTerrainLOD());
+                    terrainLODUpdateStarted = !terrainLODUpdateStarted;
+                }
+                else if (collisionCount == 0)
+                {
+                    StopCoroutine(UpdateTerrainLOD());
+                    terrainLODUpdateStarted = !terrainLODUpdateStarted;
+                }
                 while (currentCollisions.Count > 0)
                 {
                     Collision collidedObject = currentCollisions.Dequeue();
@@ -88,8 +104,10 @@ namespace TerrainMod
                             {
                                 for (int j = 0; j < deformForecast; j++)
                                 {
-                                    int xPosition = xCoord + Mathf.RoundToInt((i - deformForecast / 2) * xzVelocityNormalised.normalized.x);
-                                    int zPosition = zCoord + Mathf.RoundToInt((j - deformForecast / 2) * xzVelocityNormalised.normalized.z);
+                                    //int xPosition = xCoord + Mathf.RoundToInt((i - deformForecast / 2) * xzVelocityNormalised.normalized.x);
+                                    //int zPosition = zCoord + Mathf.RoundToInt((j - deformForecast / 2) * xzVelocityNormalised.normalized.z);
+                                    int xPosition = xCoord + Mathf.RoundToInt(i * xzVelocityNormalised.normalized.x);
+                                    int zPosition = zCoord + Mathf.RoundToInt(j * xzVelocityNormalised.normalized.z);
                                     parentTerrain.GetComponent<Terrain>().terrainData.SetHeightsDelayLOD(xPosition, zPosition, newLOD);
                                 }
                             }
@@ -104,21 +122,23 @@ namespace TerrainMod
                     //Only correct terrain tiles' edges when there are collision on them
                     CorrectTerrainEdge();
                 }
-                if (updateCount < 25)
-                {
-                    updateCount++;
-                }
-                else
-                {
-                    updateCount = 0;
-                    parentTerrain.GetComponent<Terrain>().ApplyDelayedHeightmapModification();
-                }
+                //if (updateCount < 25)
+                //{
+                //    updateCount++;
+                //}
+                //else
+                //{
+                //    updateCount = 0;
+                //    parentTerrain.GetComponent<Terrain>().ApplyDelayedHeightmapModification();
+                //}
+
             }
             else
             {
                 currentCollisions.Clear();
             }
         }
+
         void CorrectTerrainEdge()
         {
             Terrain terrain = gameObject.GetComponent<Terrain>();
@@ -201,6 +221,14 @@ namespace TerrainMod
             }
 
         }
+        IEnumerator UpdateTerrainLOD()
+        {
+            //Debug.Log("in coroutine");
+            gameObject.GetComponent<Terrain>().ApplyDelayedHeightmapModification();
+            yield return new WaitForSeconds(5f);
+            //yield return null;
+        }
+
         private float[][,] GetEdgeLOD(Terrain terrain)
         {
             float[][,] edgeLOD = new float[8][,];
