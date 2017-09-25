@@ -45,7 +45,6 @@ namespace TerrainMod
             };
             terrainMod.AddComponent<UI>();
             terrainMod.AddComponent<TerrainCluster>();
-            terrainMod.AddComponent<TerrainDeformer>();
             UnityEngine.Object.DontDestroyOnLoad(terrainMod);
         }
 
@@ -61,7 +60,6 @@ namespace TerrainMod
                     foreach (var terrain in terrainMod.GetComponent<TerrainCluster>().terrainCluster)
                     {
                         UnityEngine.Object.Destroy(terrain);
-                        Debug.Log("terrain deleted");
                     }
                 }
             }
