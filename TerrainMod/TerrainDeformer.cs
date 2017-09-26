@@ -117,20 +117,6 @@ namespace TerrainMod
                     {
                     }
                 }
-                if (collisionCount > 0)
-                {
-                    //Only correct terrain tiles' edges when there are collision on them
-                    CorrectTerrainEdge();
-                }
-                //if (updateCount < 25)
-                //{
-                //    updateCount++;
-                //}
-                //else
-                //{
-                //    updateCount = 0;
-                //    parentTerrain.GetComponent<Terrain>().ApplyDelayedHeightmapModification();
-                //}
 
             }
             else
@@ -225,6 +211,7 @@ namespace TerrainMod
         IEnumerator UpdateTerrainLOD()
         {
             //Debug.Log("in coroutine");
+            CorrectTerrainEdge();
             gameObject.GetComponent<Terrain>().ApplyDelayedHeightmapModification();
             yield return new WaitForSeconds(5f);
             //yield return null;
