@@ -1,5 +1,7 @@
 ﻿using System;
 using spaar.ModLoader;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -7,7 +9,7 @@ namespace TerrainMod
 {
     class TerrainCluster : MonoBehaviour
     {
-        private int terrainSize = 0;
+        private int tilePerSide = 0;
         public bool defaultTerrainToggled = false;
         public bool DefaultTerrainToggled { get { return defaultTerrainToggled; } set { defaultTerrainToggled = value; } }
         private Vector3 defaultFloorSize = Vector3.zero;
@@ -18,7 +20,7 @@ namespace TerrainMod
         private float terrainHeight = 100f;
         private int heightmapPixelError = 5;
         private TerrainData terrainData;
-        public GameObject[,] terrainCluster;
+        public Dictionary<int, GameObject> terrainCluster;
         
 
         void OnEnable()
@@ -71,11 +73,12 @@ namespace TerrainMod
             {
                 foreach (var terrain in terrainCluster)
                 {
-                    Destroy(terrain);
+                    Destroy(terrain.Value);
                 }
+                terrainCluster.Clear();
             }
-            terrainSize = GetComponent<UI>().TerrainSize;
-            terrainCluster = new GameObject[terrainSize, terrainSize];
+            tilePerSide = GameObject.Find("Besiege Terrain Mod").GetComponent<UI>().TilePerSide;
+            terrainCluster = new Dictionary<int, GameObject>();
             terrainData = new TerrainData();
             Vector3 floorSize = new Vector3(tileSize, terrainHeight, tileSize);
 
@@ -96,46 +99,56 @@ namespace TerrainMod
             terrainData.SetHeights(0, 0, heights);
             
             // Creating terrain cluster
-            for (int i = 0; i < terrainSize; i++)
+            for (int i = 0; i < tilePerSide; i++)
             {
-                for (int j = 0; j < terrainSize; j++)
+                for (int j = 0; j < tilePerSide; j++)
                 {
-                    
-                    terrainCluster[i, j] = Terrain.CreateTerrainGameObject(Instantiate(terrainData));
-                    terrainCluster[i, j].isStatic = true;
-                    terrainCluster[i, j].GetComponent<Terrain>().materialType = Terrain.MaterialType.Custom;
-                    terrainCluster[i, j].GetComponent<Terrain>().materialTemplate = GameObject.Find("FloorBig").GetComponent<MeshRenderer>().sharedMaterial;
-                    terrainCluster[i, j].GetComponent<Terrain>().materialTemplate.globalIlluminationFlags = MaterialGlobalIlluminationFlags.BakedEmissive;
-                    //terrainCluster[i, j].GetComponent<Terrain>().detailObjectDistance = 10;
-                    terrainCluster[i, j].GetComponent<Terrain>().heightmapPixelError = heightmapPixelError;
-                    terrainCluster[i, j].GetComponent<Terrain>().detailObjectDistance = 25;
-                    terrainCluster[i, j].GetComponent<Terrain>().detailObjectDensity = 0f;
-                    terrainCluster[i, j].GetComponent<Terrain>().castShadows = false;
-                    terrainCluster[i, j].GetComponent<Terrain>().drawTreesAndFoliage = false;
-                    terrainCluster[i, j].GetComponent<Terrain>().editorRenderFlags = TerrainRenderFlags.heightmap;
-                    //Debug.Log(terrainCluster[i, j].GetComponent<Terrain>().GetComponent<Renderer>().isPartOfStaticBatch);
-                    terrainCluster[i, j].AddComponent<TerrainDeformer>();
+                    //terrainCluster.Add(i*terrainSize+j, Terrain.CreateTerrainGameObject(Instantiate(terrainData)));
+                    GameObject tempTerrainObject = Terrain.CreateTerrainGameObject(Instantiate(terrainData));
+                    tempTerrainObject.isStatic = true;
+                    tempTerrainObject.GetComponent<Terrain>().materialType = Terrain.MaterialType.Custom;
+                    tempTerrainObject.GetComponent<Terrain>().materialTemplate = Instantiate(GameObject.Find("FloorBig").GetComponent<MeshRenderer>().material);
+                    tempTerrainObject.GetComponent<Terrain>().materialTemplate.globalIlluminationFlags = MaterialGlobalIlluminationFlags.BakedEmissive;
+                    //if (i == 0 && j == 0)
+                    //{
+                    //    tempTerrainObject.GetComponent<Terrain>().materialTemplate.color = Color.black;
+                    //}
+                    //if (i == 1 && j == 1)
+                    //{
+                    //    tempTerrainObject.GetComponent<Terrain>().materialTemplate.color = Color.blue;
+                    //}
+                    //if (i == 0 & j == 1)
+                    //{
+                    //    tempTerrainObject.GetComponent<Terrain>().materialTemplate.color = Color.green;
+                    //}
+                    tempTerrainObject.GetComponent<Terrain>().heightmapPixelError = heightmapPixelError;
+                    tempTerrainObject.GetComponent<Terrain>().detailObjectDistance = 25;
+                    tempTerrainObject.GetComponent<Terrain>().detailObjectDensity = 0f;
+                    tempTerrainObject.GetComponent<Terrain>().castShadows = false;
+                    tempTerrainObject.GetComponent<Terrain>().drawTreesAndFoliage = false;
+                    tempTerrainObject.GetComponent<Terrain>().editorRenderFlags = TerrainRenderFlags.heightmap;
+                    tempTerrainObject.AddComponent<TerrainDeformer>();
                     // name all terrains
-                    terrainCluster[i, j].name = String.Concat("Terrain", "-", i, "-", j);
+                    tempTerrainObject.name = String.Concat("Terrain", "-", i, "-", j);
                     
                     // Shift tiles to the center
-                    if (terrainSize % 2 == 0)
+                    if (tilePerSide % 2 == 0)
                     {
-                        terrainCluster[i, j].transform.Translate(new Vector3(-tileSize * (i - (terrainSize - 1) / 2), -terrainHeight / 2 - 0.05f, -tileSize * (j - (terrainSize - 1) / 2)));
+                        tempTerrainObject.transform.Translate(new Vector3(-tileSize * (i - (tilePerSide - 1) / 2), -terrainHeight / 2 - 0.05f, -tileSize * (j - (tilePerSide - 1) / 2)));
                     }
                     else
                     {
-                        terrainCluster[i, j].transform.Translate(new Vector3(-tileSize * (i - (terrainSize - 1) / 2 + 0.5f), -terrainHeight / 2 - 0.05f, -tileSize * (j - (terrainSize - 1) / 2 + 0.5f)));
+                        tempTerrainObject.transform.Translate(new Vector3(-tileSize * (i - (tilePerSide - 1) / 2 + 0.5f), -terrainHeight / 2 - 0.05f, -tileSize * (j - (tilePerSide - 1) / 2 + 0.5f)));
                     }
-
+                    terrainCluster.Add(i * tilePerSide + j, tempTerrainObject);
                 }
             }
             // Setting up neighbour for each terrain object when terrainsize > 1            
-            if (terrainSize > 1)
+            if (tilePerSide > 1)
             {
-                for (int i = 0; i < terrainSize; i++)
+                for (int i = 0; i < tilePerSide; i++)
                 {
-                    for (int j = 0; j < terrainSize; j++)
+                    for (int j = 0; j < tilePerSide; j++)
                     {
                         Terrain bottomTerrain = new Terrain();
                         Terrain topTerrain = new Terrain(); 
@@ -143,34 +156,34 @@ namespace TerrainMod
                         Terrain rightTerrain = new Terrain();
                         try
                         {
-                            bottomTerrain = terrainCluster[i, j + 1].GetComponent<Terrain>();
+                            bottomTerrain = terrainCluster[i * tilePerSide + j + 1].GetComponent<Terrain>();
                         }
                         catch (Exception)
                         {
                         }
                         try
                         {
-                            topTerrain = terrainCluster[i, j - 1].GetComponent<Terrain>();
+                            topTerrain = terrainCluster[i * tilePerSide + j - 1].GetComponent<Terrain>();
                         }
                         catch (Exception)
                         {
                         }
                         try
                         {
-                            leftTerrain = terrainCluster[i + 1, j].GetComponent<Terrain>();
+                            leftTerrain = terrainCluster[(i + 1) * tilePerSide + j].GetComponent<Terrain>();
                         }
                         catch (Exception)
                         {
                         }
                         try
                         {
-                            rightTerrain = terrainCluster[i - 1, j].GetComponent<Terrain>();
+                            rightTerrain = terrainCluster[(i - 1) * tilePerSide + j].GetComponent<Terrain>();
                         }
                         catch (Exception)
                         {
                         }
-                        terrainCluster[i, j].GetComponent<Terrain>().SetNeighbors(leftTerrain, topTerrain, rightTerrain, bottomTerrain);
-                        terrainCluster[i, j].GetComponent<Terrain>().Flush();
+                        terrainCluster[i * tilePerSide + j].GetComponent<Terrain>().SetNeighbors(leftTerrain, topTerrain, rightTerrain, bottomTerrain);
+                        terrainCluster[i * tilePerSide + j].GetComponent<Terrain>().Flush();
                     }
                 }
             }

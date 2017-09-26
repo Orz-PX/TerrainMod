@@ -7,7 +7,7 @@ using UnityEngine;
 namespace TerrainMod
 {
     class TerrainDeformer : MonoBehaviour
-    {        
+    {
         private Queue<Collision> currentCollisions = new Queue<Collision>();
 
         private int updateCount = 0;
@@ -17,7 +17,7 @@ namespace TerrainMod
         private String[] terrainNameSplit;
 
         private GameObject parentTerrain;
-        private GameObject[,] terrainCluster;
+        private Dictionary<int, GameObject> terrainCluster;
         Terrain bottomTerrain;
         Terrain topTerrain;
         Terrain leftTerrain;
@@ -144,6 +144,7 @@ namespace TerrainMod
             Terrain terrain = gameObject.GetComponent<Terrain>();
             
             int terrainGridCount = terrain.terrainData.heightmapWidth;
+            int tilePerSide = GameObject.Find("Besiege Terrain Mod").GetComponent<UI>().TilePerSide;
             terrainCluster = GameObject.Find("Besiege Terrain Mod").GetComponent<TerrainCluster>().terrainCluster;
 
             //float[,] BottomHeights = terrain.terrainData.GetHeights(0, 0, terrainGridCount, 1);
@@ -157,28 +158,28 @@ namespace TerrainMod
 
             try
             {
-                bottomTerrain = terrainCluster[indexI, indexJ + 1].GetComponent<Terrain>();
+                bottomTerrain = terrainCluster[indexI * tilePerSide + indexJ + 1].GetComponent<Terrain>();
             }
             catch (Exception)
             {
             }
             try
             {
-                topTerrain = terrainCluster[indexI, indexJ - 1].GetComponent<Terrain>();
+                topTerrain = terrainCluster[indexI * tilePerSide + indexJ - 1].GetComponent<Terrain>();
             }
             catch (Exception)
             {
             }
             try
             {
-                leftTerrain = terrainCluster[indexI + 1, indexJ].GetComponent<Terrain>();
+                leftTerrain = terrainCluster[(indexI + 1) * tilePerSide + indexJ].GetComponent<Terrain>();
             }
             catch (Exception)
             {
             }
             try
             {
-                rightTerrain = terrainCluster[indexI - 1, indexJ].GetComponent<Terrain>();
+                rightTerrain = terrainCluster[(indexI - 1) * tilePerSide + indexJ].GetComponent<Terrain>();
             }
             catch (Exception)
             {

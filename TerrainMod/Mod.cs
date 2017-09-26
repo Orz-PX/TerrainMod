@@ -59,8 +59,9 @@ namespace TerrainMod
                 {
                     foreach (var terrain in terrainMod.GetComponent<TerrainCluster>().terrainCluster)
                     {
-                        UnityEngine.Object.Destroy(terrain);
+                        UnityEngine.Object.Destroy(terrain.Value);
                     }
+                    terrainMod.GetComponent<TerrainCluster>().terrainCluster.Clear();
                 }
             }
             UnityEngine.Object.Destroy(terrainMod);
