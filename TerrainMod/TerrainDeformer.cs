@@ -10,7 +10,7 @@ namespace TerrainMod
     {
         private Queue<Collision> currentCollisions = new Queue<Collision>();
 
-        private int updateCount = 0;
+        //private int updateCount = 0;
         private Char delimiter = '-';
         private int indexI;
         private int indexJ;
@@ -23,10 +23,10 @@ namespace TerrainMod
         Terrain leftTerrain;
         Terrain rightTerrain;
         private float[][,] currentTileEdgeLOD;
-        private float[][,] bottomTileEdgeLOD;
-        private float[][,] topTileEdgeLOD;
-        private float[][,] leftTileEdgeLOD;
-        private float[][,] rightTileEdgeLOD;
+        //private float[][,] bottomTileEdgeLOD;
+        //private float[][,] topTileEdgeLOD;
+        //private float[][,] leftTileEdgeLOD;
+        //private float[][,] rightTileEdgeLOD;
         //private int secBottom = 0;
         //private int secTop = 1;
         //private int secLeft = 2;
@@ -117,6 +117,11 @@ namespace TerrainMod
                     {
                     }
                 }
+                if (collisionCount > 0)
+                {
+                    //Only correct terrain tiles' edges when there are collision on them
+                    CorrectTerrainEdge();
+                }
 
             }
             else
@@ -180,28 +185,28 @@ namespace TerrainMod
 
             if (bottomTerrain != null)
             {
-                bottomTileEdgeLOD = GetEdgeLOD(bottomTerrain);
+                float[][,] bottomTileEdgeLOD = GetEdgeLOD(bottomTerrain);
                 float[,] aveTopBottomEdgeLOD = AveTwo2DArray(bottomHeights, bottomTileEdgeLOD[top]);
                 terrain.terrainData.SetHeightsDelayLOD(0, 0, aveTopBottomEdgeLOD);
                 bottomTerrain.terrainData.SetHeightsDelayLOD(0, terrainGridCount - 1, aveTopBottomEdgeLOD);
             }
             if (topTerrain != null)
             {
-                topTileEdgeLOD = GetEdgeLOD(topTerrain);
+                float[][,] topTileEdgeLOD = GetEdgeLOD(topTerrain);
                 float[,] aveTopBottomEdgeLOD = AveTwo2DArray(topHeights, topTileEdgeLOD[bottom]);
                 terrain.terrainData.SetHeightsDelayLOD(0, terrainGridCount - 1, aveTopBottomEdgeLOD);
                 topTerrain.terrainData.SetHeightsDelayLOD(0, 0, aveTopBottomEdgeLOD);
             }
             if (leftTerrain != null)
             {
-                leftTileEdgeLOD = GetEdgeLOD(leftTerrain);
+                float[][,] leftTileEdgeLOD = GetEdgeLOD(leftTerrain);
                 float[,] aveLeftRightEdgeLOD = AveTwo2DArray(leftHeights, leftTileEdgeLOD[right]);
                 terrain.terrainData.SetHeightsDelayLOD(0, 0, aveLeftRightEdgeLOD);
                 leftTerrain.terrainData.SetHeightsDelayLOD(terrainGridCount - 1, 0, aveLeftRightEdgeLOD);
             }
             if (rightTerrain != null)
             {
-                rightTileEdgeLOD = GetEdgeLOD(rightTerrain);
+                float[][,] rightTileEdgeLOD = GetEdgeLOD(rightTerrain);
                 float[,] aveLeftRightEdgeLOD = AveTwo2DArray(rightHeights, rightTileEdgeLOD[left]);
                 terrain.terrainData.SetHeightsDelayLOD(terrainGridCount - 1, 0, aveLeftRightEdgeLOD);
                 rightTerrain.terrainData.SetHeightsDelayLOD(0, 0, aveLeftRightEdgeLOD);
@@ -211,7 +216,6 @@ namespace TerrainMod
         IEnumerator UpdateTerrainLOD()
         {
             //Debug.Log("in coroutine");
-            CorrectTerrainEdge();
             gameObject.GetComponent<Terrain>().ApplyDelayedHeightmapModification();
             yield return new WaitForSeconds(5f);
             //yield return null;

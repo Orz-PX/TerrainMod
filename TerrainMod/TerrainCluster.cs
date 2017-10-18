@@ -97,18 +97,19 @@ namespace TerrainMod
                 }
             }
             terrainData.SetHeights(0, 0, heights);
-            
+
             // Creating terrain cluster
+            Material floorMaterial = Instantiate(GameObject.Find("FloorBig").GetComponent<MeshRenderer>().material);
             for (int i = 0; i < tilePerSide; i++)
             {
                 for (int j = 0; j < tilePerSide; j++)
                 {
                     //terrainCluster.Add(i*terrainSize+j, Terrain.CreateTerrainGameObject(Instantiate(terrainData)));
                     GameObject tempTerrainObject = Terrain.CreateTerrainGameObject(Instantiate(terrainData));
-                    tempTerrainObject.isStatic = true;
+                    //tempTerrainObject.isStatic = true;
                     tempTerrainObject.GetComponent<Terrain>().materialType = Terrain.MaterialType.Custom;
-                    tempTerrainObject.GetComponent<Terrain>().materialTemplate = Instantiate(GameObject.Find("FloorBig").GetComponent<MeshRenderer>().material);
-                    tempTerrainObject.GetComponent<Terrain>().materialTemplate.globalIlluminationFlags = MaterialGlobalIlluminationFlags.BakedEmissive;
+                    tempTerrainObject.GetComponent<Terrain>().materialTemplate = floorMaterial;
+                    //tempTerrainObject.GetComponent<Terrain>().materialTemplate.globalIlluminationFlags = MaterialGlobalIlluminationFlags.BakedEmissive;
                     //if (i == 0 && j == 0)
                     //{
                     //    tempTerrainObject.GetComponent<Terrain>().materialTemplate.color = Color.black;
@@ -124,10 +125,13 @@ namespace TerrainMod
                     tempTerrainObject.GetComponent<Terrain>().heightmapPixelError = heightmapPixelError;
                     tempTerrainObject.GetComponent<Terrain>().detailObjectDistance = 25;
                     tempTerrainObject.GetComponent<Terrain>().detailObjectDensity = 0f;
+                    tempTerrainObject.GetComponent<Terrain>().terrainData.SetDetailResolution(512, 128);
                     tempTerrainObject.GetComponent<Terrain>().castShadows = false;
                     tempTerrainObject.GetComponent<Terrain>().drawTreesAndFoliage = false;
                     tempTerrainObject.GetComponent<Terrain>().editorRenderFlags = TerrainRenderFlags.heightmap;
                     tempTerrainObject.AddComponent<TerrainDeformer>();
+                    tempTerrainObject.AddComponent<TerrainViewController>();
+                    tempTerrainObject.GetComponent<TerrainViewController>().originalTerrainShader = floorMaterial.shader;
                     // name all terrains
                     tempTerrainObject.name = String.Concat("Terrain", "-", i, "-", j);
                     
