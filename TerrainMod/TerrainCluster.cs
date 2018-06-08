@@ -125,7 +125,7 @@ namespace TerrainMod
                     tempTerrainObject.GetComponent<Terrain>().heightmapPixelError = heightmapPixelError;
                     tempTerrainObject.GetComponent<Terrain>().detailObjectDistance = 25;
                     tempTerrainObject.GetComponent<Terrain>().detailObjectDensity = 0f;
-                    tempTerrainObject.GetComponent<Terrain>().terrainData.SetDetailResolution(512, 128);
+                    tempTerrainObject.GetComponent<Terrain>().terrainData.SetDetailResolution(256, 32);
                     tempTerrainObject.GetComponent<Terrain>().castShadows = false;
                     tempTerrainObject.GetComponent<Terrain>().drawTreesAndFoliage = false;
                     tempTerrainObject.GetComponent<Terrain>().editorRenderFlags = TerrainRenderFlags.heightmap;
